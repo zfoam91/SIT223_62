@@ -1,9 +1,6 @@
 #include "header.hpp"
 #include <SFML/Graphics.hpp>
 using namespace sf;
-int n=20, m=20, fm=0, mc=0, w=32, cnt=60, time1=0, **arr = nullptr, **showarr = nullptr;
-int game=0;
-string str="";
 
 void init();
 int main(){
@@ -18,7 +15,7 @@ int main(){
     tboom.loadFromFile("boom.png");
     tgamestat.loadFromFile("game.png");
     tretry.loadFromFile("game.png");
-    Sprite s(t);
+    Sprite s(t);void exchange(int **arr, int x, int y, int i, int j);
     Sprite timer1(ttimer);
 	Sprite timer2(ttimer);
 	Sprite timer3(ttimer);

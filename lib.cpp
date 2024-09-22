@@ -2,6 +2,10 @@
 using namespace std;
 int arrx[]={-1,-1,-1,0,0,1,1,1};
 int arry[]={-1,0,1,-1,1,-1,0,1};
+int n=20, m=20, fm=0, mc=0, w=32, cnt=60, time1=0, **arr = nullptr, **showarr = nullptr;
+int game=0;
+string str="";
+
 int **initarr(int **arr){
 	arr=(int**)calloc((100) ,sizeof(int*));
 	for(int i=0;i<100;i++){
