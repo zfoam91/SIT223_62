@@ -36,6 +36,7 @@ pipeline {
                         --name minesweeper-staging \
                         -e DISPLAY=\$DISPLAY \
                         -v /tmp/.X11-unix:/tmp/.X11-unix \
+                        --network host \
                         ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                 } 
