@@ -20,5 +20,8 @@ RUN chmod +x /app/minesweeper
 # Expose the port the app runs on (if applicable)
 # EXPOSE 80
 
+# Set the DISPLAY environment variable
+ENV DISPLAY=:0
+
 # Command to run the application
 CMD ["./minesweeper"]
