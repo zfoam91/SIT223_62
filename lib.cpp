@@ -39,7 +39,7 @@ void bfstraversal(int **showarr, int **arr, int x, int y){
 void generate(int **arr, int n, int m, int k){
 	srand(time(NULL));
 	while(k>0){
-		int x=rand()%n+1, y=rand()%m+2;
+		int x=rand()%n+1, y=rand()%m+1;
 		if(arr[x][y]!=9){
 			arr[x][y]=9;
 			k--;
