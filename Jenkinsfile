@@ -18,13 +18,14 @@ pipeline {
                 archiveArtifacts artifacts: 'cppcheck_result.xml', fingerprint: true
             }
         }
-        /*
+        
         stage('Deploy') {
             steps {
-                sh 'docker build -t minesweeper .'
-                sh 'docker run minesweeper'
+                sh 'docker-compose build'
+                sh 'docker-compose up -d'
             }
         }
+        /*
         stage('Release'){
             steps{
 
@@ -40,8 +41,7 @@ pipeline {
     
     post {
         always {
-            junit allowEmptyResults: true, testResults: 'test_results.xml'
-        }
+            junit allowEmptyResults: true, testResults: 'test_results.xml'}
         success {
             archiveArtifacts artifacts: 'minesweeper', fingerprint: true
         }
