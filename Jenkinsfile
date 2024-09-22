@@ -1,5 +1,11 @@
 pipeline {
     agent any
+    
+    environment {
+        DOCKER_IMAGE = 'minesweeper'
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+    }
+
     stages {
         stage('Build') {
             steps {
@@ -21,8 +27,12 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                sh 'docker-compose build'
-                sh 'docker-compose up -d'
+                script {
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    sh "docker stop minesweeper-staging || true"
+                    sh "docker rm minesweeper-staging || true"
+                    sh "docker run -d --name minesweeper-staging ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                } 
             }
         }
         /*

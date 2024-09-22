@@ -1,12 +1,24 @@
-FROM ubuntu:latest
+# Use a lightweight base image
+FROM ubuntu:20.04
 
+# Install SFML dependencies
 RUN apt-get update && apt-get install -y \
-    g++ \
-    libsfml-dev
+    libsfml-graphics2.5 \
+    libsfml-window2.5 \
+    libsfml-system2.5 \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY . /app
+# Set the working directory in the container
 WORKDIR /app
 
-RUN g++ -O main.cpp lib.cpp -o minesweeper -lsfml-graphics -lsfml-window -lsfml-system
+# Copy the compiled Minesweeper binary into the container
+COPY minesweeper /app/
 
+# Make the binary executable
+RUN chmod +x /app/minesweeper
+
+# Expose the port the app runs on (if applicable)
+# EXPOSE 80
+
+# Command to run the application
 CMD ["./minesweeper"]
