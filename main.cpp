@@ -1,9 +1,9 @@
 #include "header.hpp"
 #include <SFML/Graphics.hpp>
 using namespace sf;
-int n=20, m=20, fm=0, mc=0, w=32, cnt=60, time1=0, **arr, **showarr;
+int n=20, m=20, fm=0, mc=0, w=32, cnt=60, time1=0, **arr = nullptr, **showarr = nullptr;
 int game=0;
-string str;
+string str="";
 
 void init();
 int main(){
