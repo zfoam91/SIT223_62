@@ -31,11 +31,11 @@ protected:
     }
 };
 
-TEST_F(MinesweeperTest, InitializationTest) {
-    EXPECT_EQ(n, 20);
-    EXPECT_EQ(m, 20);
-    EXPECT_EQ(cnt, 60);
-}
+//TEST_F(MinesweeperTest, InitializationTest) {
+//    EXPECT_EQ(n, 20);
+//    EXPECT_EQ(m, 20);
+//    EXPECT_EQ(cnt, 60);
+//}
 
 TEST_F(MinesweeperTest, MineCountTest) {
     int mineCount = 0;

@@ -14,16 +14,33 @@ pipeline {
         }
         stage('Code Quality Analysis') {
             steps {
-                sh 'cppcheck --enable=all --inconclusive --xml --xml-version=2 *.cpp *.hpp 2> cppcheck_report.xml'
+                script {
+                    def scannerHome = tool 'SonarQube Scanner' // Make sure the tool name matches your configuration
+                    withSonarQubeEnv('SonarQube Server Name') { // Use the server name configured earlier
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=yourProjectKey -Dsonar.sources=."
+                    }
+                }
             }
         }
+        /*
         stage('Deploy') {
             steps {
                 sh 'docker build -t minesweeper .'
                 sh 'docker run minesweeper'
             }
         }
+        stage('Release'){
+            steps{
+
+            }
+        }
+        stage('Monitor and Alert'){
+            steps{
+
+            }
+        }
     }
+    */
     post {
         always {
             junit allowEmptyResults: true, testResults: 'test_results.xml'
