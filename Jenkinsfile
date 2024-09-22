@@ -28,12 +28,19 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     sh "docker stop minesweeper-staging || true"
                     sh "docker rm minesweeper-staging || true"
-                    sh "docker run -d --name minesweeper-staging -e DISPLAY=\${DISPLAY} -v /tmp/.X11-unix:/tmp/.X11-unix ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                
-                } 
+                    sh """
+                        docker run -d --name minesweeper-staging \
+                        -e DISPLAY=\${DISPLAY} \
+                        -v /tmp/.X11-unix:/tmp/.X11-unix \
+                        -v /etc/machine-id:/etc/machine-id:ro \
+                        --net=host \
+                        ${DOCKER_IMAGE}:${DOCKER_TAG} \
+                        bash -c "echo DISPLAY=\$DISPLAY && xeyes || echo xeyes failed && ./minesweeper || echo minesweeper failed"
+                    """
+                    sh "docker logs minesweeper-staging"
+                }
             }
         }
         /*
