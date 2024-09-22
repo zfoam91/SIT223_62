@@ -29,9 +29,9 @@ pipeline {
             steps {
                 script {
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    sh "sudo docker stop minesweeper-staging || true"
-                    sh "sudo docker rm minesweeper-staging || true"
-                    sh "sudo docker run -d --name minesweeper-staging ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh "docker stop minesweeper-staging || true"
+                    sh "docker rm minesweeper-staging || true"
+                    sh "docker run -d --name minesweeper-staging ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 } 
             }
         }
