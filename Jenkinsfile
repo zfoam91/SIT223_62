@@ -31,7 +31,6 @@ pipeline {
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     sh "docker stop minesweeper-staging || true"
                     sh "docker rm minesweeper-staging || true"
-                    sh "docker run -d --name minesweeper-staging ${DOCKER_IMAGE}:${DOCKER_TAG}"
                     sh """
                         docker run -d \
                         --name minesweeper-staging \
