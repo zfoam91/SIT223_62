@@ -7,3 +7,6 @@ void exchange(int **arr, int x, int y, int i, int j);
 void firstmove(int **arr, int x, int y, int n, int m);
 bool check(int x, int y);
 int **initarr(int **arr);
+int n=20, m=20, fm=0, mc=0, w=32, cnt=60, time1=0, **arr, **showarr;
+int game=0;
+string str;

@@ -9,7 +9,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh 'g++ -std=c++11 -o test_minesweeper test_minesweeper.cpp lib.cpp -lgtest -lgtest_main -pthread'
-                sh './test_minesweeper'
+                sh './test_minesweeper --gtest_output="xml:test_results.xml"'
             }
         }
         stage('Code Quality Analysis') {
@@ -18,17 +18,19 @@ pipeline {
             }
         }
         stage('Deploy') {
-	    steps {
-		sh 'docker build -t minesweeper .'
-		sh 'xhost +local:docker'
-		sh 'docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix minesweeper'
-	    }
-	}
+            steps {
+                sh 'docker build -t minesweeper .'
+                sh 'docker run minesweeper'
+            }
+        }
     }
     post {
         always {
-            junit 'test_results.xml'
+            junit allowEmptyResults: true, testResults: 'test_results.xml'
             recordIssues enabledForFailure: true, tool: cppCheck(pattern: 'cppcheck_report.xml')
+        }
+        success {
+            archiveArtifacts artifacts: 'minesweeper', fingerprint: true
         }
     }
 }
