@@ -14,12 +14,8 @@ pipeline {
         }
         stage('Code Quality Analysis') {
             steps {
-                script {
-                    def scannerHome = tool 'SonarQube Scanner' // Make sure the tool name matches your configuration
-                    withSonarQubeEnv('SonarQube Server Name') { // Use the server name configured earlier
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=yourProjectKey -Dsonar.sources=."
-                    }
-                }
+                sh 'cppcheck --enable=all --xml . 2> cppcheck_result.xml'
+                archiveArtifacts artifacts: 'cppcheck_result.xml', fingerprint: true
             }
         }
         /*
@@ -45,7 +41,6 @@ pipeline {
     post {
         always {
             junit allowEmptyResults: true, testResults: 'test_results.xml'
-            recordIssues enabledForFailure: true, tool: cppCheck(pattern: 'cppcheck_report.xml')
         }
         success {
             archiveArtifacts artifacts: 'minesweeper', fingerprint: true
