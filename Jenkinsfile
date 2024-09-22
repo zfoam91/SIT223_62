@@ -32,6 +32,13 @@ pipeline {
                     sh "docker stop minesweeper-staging || true"
                     sh "docker rm minesweeper-staging || true"
                     sh "docker run -d --name minesweeper-staging ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    sh """
+                        docker run -d \
+                        --name minesweeper-staging \
+                        -e DISPLAY=\$DISPLAY \
+                        -v /tmp/.X11-unix:/tmp/.X11-unix \
+                        ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
                 } 
             }
         }
