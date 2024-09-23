@@ -76,7 +76,8 @@ pipeline {
                     // Calculate build duration or other metrics as needed
                     def buildDuration = currentBuild.duration / 1000 // in seconds
                     
-                    sh '''
+                    // Send metric to Datadog
+                    sh """
                         curl -X POST "https://api.datadoghq.com/api/v1/series" \
                         -H "Content-Type: application/json" \
                         -H "DD-API-KEY: ${DATADOG_API_KEY}" \
@@ -88,7 +89,28 @@ pipeline {
                                 "tags": ["job:${JOB_NAME}", "build:${BUILD_NUMBER}"]
                             }]
                         }'
-                    '''
+                    """
+
+                    // Query Datadog for metrics and save as artifact
+                    sh """
+                        curl -X GET "https://api.datadoghq.com/api/v1/query?from=${System.currentTimeMillis()/1000 - 3600}&to=${System.currentTimeMillis()/1000}&query=avg:jenkins.build.duration{job:${JOB_NAME}}" \
+                        -H "DD-API-KEY: ${DATADOG_API_KEY}" \
+                        -H "DD-APPLICATION-KEY: ${DATADOG_APP_KEY}" \
+                        -o datadog_metrics.json
+                    """
+                    archiveArtifacts artifacts: 'datadog_metrics.json', fingerprint: true
+
+                    // Check for active alerts
+                    def alertsResponse = sh(script: """
+                        curl -X GET "https://api.datadoghq.com/api/v1/monitor/search?query=status:Alert" \
+                        -H "DD-API-KEY: ${DATADOG_API_KEY}" \
+                        -H "DD-APPLICATION-KEY: ${DATADOG_APP_KEY}"
+                    """, returnStdout: true)
+
+                    def alerts = readJSON text: alertsResponse
+                    if (alerts.monitors.size() > 0) {
+                        echo "Warning: There are active Datadog alerts. Please check Datadog dashboard."
+                    }
                 }
             }
         } 
