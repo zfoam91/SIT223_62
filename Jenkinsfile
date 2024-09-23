@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
+        VNC_PASSWORD = 'simplepassword'
     }
 
     stages {
