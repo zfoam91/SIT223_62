@@ -30,9 +30,7 @@ pipeline {
                 script {
                     sh "docker stop minesweeper-staging || true"
                     sh "docker rm minesweeper-staging || true"
-                    // Allow access to the X server for Docker
-                    sh 'xhost +local:docker'
-
+                    
                     // Build the Docker image
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
 
@@ -44,7 +42,7 @@ pipeline {
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                     input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
-                    sh 'xhost -local:docker'
+                
                 } 
             }
         }
