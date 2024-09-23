@@ -31,8 +31,10 @@ pipeline {
                 script {
                     // Create a zip file containing the executable and assets
                     sh 'zip -r minesweeper.zip minesweeper assets'
-                    sh 'mv minesweeper.zip /var/www/html/'
-                    sh 'cp index.html /var/www/html/'
+                    sh 'ls -l'
+                    sh 'mv minesweeper.zip .'
+                    sh 'cp index.html .'
+                    sh 'ls -l'
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     sh "docker stop minesweeper-deploy || true"
                     sh "docker rm minesweeper-deploy || true"
