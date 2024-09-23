@@ -18,6 +18,9 @@ USER xterm
 # Set the working directory in the container
 WORKDIR /home/xterm
 
+# Set the DISPLAY environment variable
+ENV DISPLAY=:99
+
 # Copy the compiled Minesweeper binary and assets into the container
 COPY tiles.png timer.png boom.png game.png ./
 COPY ./minesweeper ./
