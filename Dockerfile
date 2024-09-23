@@ -28,5 +28,10 @@ ENV DISPLAY :1
 # Expose the VNC port
 EXPOSE 5901
 
+# Set a password for VNC
+RUN mkdir -p /root/.vnc && \
+    echo "912143" | vncpasswd -f > /root/.vnc/passwd && \
+    chmod 600 /root/.vnc/passwd
+
 # Start the VNC server and run the Minesweeper application
 CMD ["sh", "-c", "vncserver :1 -geometry 1024x768 -depth 24 && DISPLAY=:1 ./minesweeper"]
