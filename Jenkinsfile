@@ -37,10 +37,10 @@ pipeline {
 
                     // Run the Docker container with X11 forwarding
                     sh """
-                        docker run --gpus all -d --name minesweeper-display \
+                        docker run -d --name minesweeper-display \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
-                            minesweeper:32
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
 
                     // Wait for user input to stop the game

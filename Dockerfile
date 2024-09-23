@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy the compiled Minesweeper binary into the container
-COPY main.cpp lib.cpp tiles.png timer.png boom.png game.png ./
-COPY ./minesweeper ./
+COPY minesweeper /app/
+COPY tiles.png timer.png boom.png game.png /app/assets
+
 
 # Make the binary executable
 RUN chmod +x /app/minesweeper
