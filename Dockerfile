@@ -19,11 +19,11 @@ WORKDIR /app
 COPY tiles.png timer.png boom.png game.png ./
 COPY ./minesweeper ./
 
-# Create a user to run the VNC server
-RUN useradd -m vncuser && echo "vncuser:vncpassword" | chpasswd
+ENV USER=root
+ENV HOME /root
 
-USER vncuser
-ENV HOME /home/vncuser
+# Set the display port for VNC
+ENV DISPLAY :1
 
 # Expose the VNC port
 EXPOSE 5901
