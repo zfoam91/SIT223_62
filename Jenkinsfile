@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
+        DEPLOY_PORT = '8080'
     }
 
     stages {
@@ -28,21 +29,17 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh "docker stop minesweeper-staging || true"
-                    sh "docker rm minesweeper-staging || true"
-                    
+                    // Create a zip file containing the executable and assets
+                    sh 'zip -r minesweeper.zip minesweeper assets'
+                    sh 'mv minesweeper.zip /var/www/html/'
+                    sh 'cp index.html /var/www/html/'
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    echo "Docker image ${DOCKER_IMAGE}:${DOCKER_TAG} built successfully."
-                    
-                    // Run the Docker container with VNC
-                    sh """
-                        docker run -d -p 5901:5901 \
-                            ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
+                    sh "docker stop minesweeper-deploy || true"
+                    sh "docker rm minesweeper-deploy || true"
+                    sh "docker run -d --name minesweeper-deploy -p ${DEPLOY_PORT}:80 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    echo "Minesweeper download page available at http://localhost:${DEPLOY_PORT}"
 
-                    input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
-                
-                } 
+                }
             }
         }
         /*

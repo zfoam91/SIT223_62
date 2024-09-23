@@ -1,45 +1,13 @@
-# Use a lightweight base image
-FROM ubuntu:20.04
+FROM nginx:alpine
 
-# Set non-interactive installation
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && apt-get install -y \
-    libsfml-dev \
-    x11-apps \
-    xfce4 \
-    xfce4-terminal \
-    tightvncserver \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set the working directory in the container
-WORKDIR /app
+# Set the working directory
+WORKDIR /usr/share/nginx/html
 
 # Copy the compiled Minesweeper binary and assets into the container
-COPY tiles.png timer.png boom.png game.png ./
-COPY ./minesweeper ./
+COPY minesweeper.zip ./
+COPY index.html ./
+# Expose port 80
+EXPOSE 80
 
-ENV USER=root
-ENV HOME /root
-
-# Set the display port for VNC
-ENV DISPLAY :1
-
-# Expose the VNC port
-EXPOSE 5901
-
-# Set a password for VNC
-RUN mkdir -p /root/.vnc && \
-    echo "your_password_here" | vncpasswd -f > /root/.vnc/passwd && \
-    chmod 600 /root/.vnc/passwd
-
-# Create a VNC startup script
-RUN echo '#!/bin/sh\n' \
-    'unset SESSION_MANAGER\n' \
-    'unset DBUS_SESSION_BUS_ADDRESS\n' \
-    'startxfce4 &\n' \
-    'xterm &' > /root/.vnc/xstartup && \
-    chmod +x /root/.vnc/xstartup
-
-# Start the VNC server and run the Minesweeper application
-CMD ["sh", "-c", "vncserver :1 -geometry 1024x768 -depth 24 && DISPLAY=:1 ./minesweeper"]
+# Use Nginx to serve the application
+CMD ["nginx", "-g", "daemon off;"]

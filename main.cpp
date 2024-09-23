@@ -10,11 +10,11 @@ int main(){
 	arr=initarr(arr);
 	showarr=initarr(showarr);
 	Texture t, ttimer, tboom, tgamestat, tretry;; 
-    t.loadFromFile("tiles.png");
-    ttimer.loadFromFile("timer.png");
-    tboom.loadFromFile("boom.png");
-    tgamestat.loadFromFile("game.png");
-    tretry.loadFromFile("game.png");
+    t.loadFromFile("assets/tiles.png");
+    ttimer.loadFromFile("assets/timer.png");
+    tboom.loadFromFile("assets/boom.png");
+    tgamestat.loadFromFile("assets/game.png");
+    tretry.loadFromFile("assets/game.png");
     Sprite s(t);void exchange(int **arr, int x, int y, int i, int j);
     Sprite timer1(ttimer);
 	Sprite timer2(ttimer);
@@ -111,7 +111,7 @@ int main(){
         	//if the player lost
         	case 1:{
         		Texture tx;
-				tx.loadFromFile("boom.png");
+				tx.loadFromFile("assets/boom.png");
 				Sprite sp(tx);
 				for (int i=1;i<=n;i++){
 		        	for (int j=2;j<=m+1;j++){
