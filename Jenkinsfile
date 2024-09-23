@@ -36,39 +36,31 @@ pipeline {
                         fi
                     '''
                     
-                    // Run socat to proxy X11 connection
-                    sh """
-                        DISPLAY_NUMBER=\$(echo \$DISPLAY | cut -d. -f1 | cut -d: -f2)
-                        socat UNIX-LISTEN:/tmp/.X11-unix/X\${DISPLAY_NUMBER},fork TCP4:localhost:60\${DISPLAY_NUMBER} &
-                    """
+                    // Prepare target environment
+                    sh '''
+                        CONTAINER_DISPLAY="0"
+                        CONTAINER_HOSTNAME="xterm"
 
-                    // Allow local connections
-                    sh 'xhost +local:'
+                        mkdir -p display/socket
+                        touch display/Xauthority
 
-                    // Build the Docker image
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    
-                    // Run the Docker container with X11 forwarding
+                        DISPLAY_NUMBER=$(echo $DISPLAY | cut -d. -f1 | cut -d: -f2)
+                        AUTH_COOKIE=$(xauth list | grep "^$(hostname)/unix:${DISPLAY_NUMBER} " | awk '{print $3}')
+
+                        xauth -f display/Xauthority add ${CONTAINER_HOSTNAME}/unix:${CONTAINER_DISPLAY} MIT-MAGIC-COOKIE-1 ${AUTH_COOKIE}
+
+                        socat UNIX-LISTEN:display/socket/X${CONTAINER_DISPLAY},fork TCP4:localhost:60${DISPLAY_NUMBER} &
+                    '''
+
+                    // Launch the container
                     sh """
-                        docker run -d --name minesweeper-display \
-                            -e DISPLAY=${DISPLAY} \
-                            -v /tmp/.X11-unix:/tmp/.X11-unix \
-                            -v ${HOME}/.Xauthority:/home/xterm/.Xauthority \
-                            --hostname \$(hostname) \
+                        docker run -it --rm \
+                            -e DISPLAY=:${CONTAINER_DISPLAY} \
+                            -e XAUTHORITY=/tmp/.Xauthority \
+                            -v ${WORKSPACE}/display/socket:/tmp/.X11-unix \
+                            -v ${WORKSPACE}/display/Xauthority:/tmp/.Xauthority \
+                            --hostname ${CONTAINER_HOSTNAME} \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
-                    """
-                    
-                    // Wait for user input to stop the game
-                    input message: 'Minesweeper should be running. Check the display. Press "Proceed" to stop the game and continue the pipeline.'
-                    
-                    // Capture and display logs
-                    sh 'docker logs minesweeper-display'
-                    
-                    // Stop and remove the container
-                    sh """
-                        docker stop minesweeper-display
-                        docker rm minesweeper-display
-                        xhost -local:
                     """
                     
                     echo "Minesweeper display test completed"
