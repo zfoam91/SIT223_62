@@ -35,32 +35,38 @@ pipeline {
                             docker rm minesweeper-display
                         fi
                     '''
-                    
-                    // Allow local connections to X server
+
+                    // Set the DISPLAY variable directly in the pipeline
+                    env.DISPLAY = ':0'  // Change this as necessary
+
+                    // Run xhost command to allow local connections
                     sh 'xhost +local:'
-                    
+
+                    // Build the Docker image
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+
                     // Run the Docker container with X11 forwarding
                     sh """
-                        docker run -it --rm \
+                        docker run -d --name minesweeper-display \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
-                            --name minesweeper-display \
-                            ${DOCKER_IMAGE}:${DOCKER_TAG} \
-                            ./minesweeper
+                            --network host \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
-                    
+
                     // Wait for user input to stop the game
                     input message: 'Minesweeper should be running. Check the display. Press "Proceed" to stop the game and continue the pipeline.'
-                    
+
                     // Capture and display logs
                     sh 'docker logs minesweeper-display'
-                    
+
                     // Stop and remove the container
                     sh """
                         docker stop minesweeper-display
+                        docker rm minesweeper-display
                         xhost -local:
                     """
-                    
+
                     echo "Minesweeper display test completed"
                 }
             }
