@@ -28,6 +28,12 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    sh '''
+                        if [ $(docker ps -q -f name=minesweeper-display) ]; then
+                            docker stop minesweeper-display
+                            docker rm minesweeper-display
+                        fi
+                    '''
                     // Start Xvfb for graphical applications
                     sh 'Xvfb :99 -screen 0 1024x768x24 &'
                     env.DISPLAY = ':99'
