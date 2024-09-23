@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        AWS_DEFAULT_REGION = 'your-region'
+        DATADOG_API_KEY = 'cc87e1d8af609a39ef59fe2f64c11591'
     }
 
     stages {
@@ -22,11 +22,30 @@ pipeline {
         }
         stage('Code Quality Analysis') {
             steps {
-                sh 'cppcheck --enable=all --xml . 2> cppcheck_result.xml'
-                archiveArtifacts artifacts: 'cppcheck_result.xml', fingerprint: true
+                
+                //sh 'cppcheck --enable=all --xml . 2> cppcheck_result.xml'
+                //archiveArtifacts artifacts: 'cppcheck_result.xml', fingerprint: true
+                script {
+                    // Calculate build duration or other metrics as needed
+                    def buildDuration = currentBuild.duration / 1000 // in seconds
+                    
+                    sh '''
+                        curl -X POST "https://api.datadoghq.com/api/v1/series" \
+                        -H "Content-Type: application/json" \
+                        -H "DD-API-KEY: ${DATADOG_API_KEY}" \
+                        -d '{
+                            "series": [{
+                                "metric": "jenkins.build.duration",
+                                "points": [[${System.currentTimeMillis() / 1000}, ${buildDuration}]],
+                                "type": "gauge",
+                                "tags": ["job:${JOB_NAME}", "build:${BUILD_NUMBER}"]
+                            }]
+                        }'
+                    '''
+                }  
             }
         }
-        
+        /*
         stage('Deploy') {
             steps {
                 script {
