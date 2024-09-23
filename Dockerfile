@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy the compiled Minesweeper binary into the container
-COPY minesweeper /app/
+COPY main.cpp lib.cpp tiles.png timer.png boom.png game.png ./
+COPY ./minesweeper ./
 
 # Make the binary executable
 RUN chmod +x /app/minesweeper
@@ -20,8 +21,6 @@ RUN chmod +x /app/minesweeper
 # Expose the port the app runs on (if applicable)
 # EXPOSE 80
 
-# Set the DISPLAY environment variable
-ENV DISPLAY=:0
 
 # Command to run the application
 CMD ["./minesweeper"]
