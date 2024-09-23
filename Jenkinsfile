@@ -32,13 +32,14 @@ pipeline {
                     sh "docker rm minesweeper-staging || true"
                     
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    echo "Docker image ${DOCKER_IMAGE}:${DOCKER_TAG} built successfully."
                     
                     // Run the Docker container with VNC
                     sh """
                         docker run -d -p 5901:5901 \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
-                    
+
                     input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
                 
                 } 
