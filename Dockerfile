@@ -35,9 +35,11 @@ RUN mkdir -p /root/.vnc && \
 
 # Create a VNC startup script
 RUN echo '#!/bin/sh\n' \
+    'unset SESSION_MANAGER\n' \
+    'unset DBUS_SESSION_BUS_ADDRESS\n' \
     'startxfce4 &\n' \
     'xterm &' > /root/.vnc/xstartup && \
     chmod +x /root/.vnc/xstartup
-    
+
 # Start the VNC server and run the Minesweeper application
 CMD ["sh", "-c", "vncserver :1 -geometry 1024x768 -depth 24 && DISPLAY=:1 ./minesweeper"]
