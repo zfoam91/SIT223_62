@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        VNC_PASSWORD = 'simplepassword'
+        AWS_DEFAULT_REGION = 'your-region'
     }
 
     stages {
@@ -31,7 +31,7 @@ pipeline {
             steps {
                 script {
                     sh 'zip -r minesweeper.zip minesweeper assets'
-                    sh 'ls -l'
+                    
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     sh "docker stop minesweeper-deploy || true"
                     sh "docker rm minesweeper-deploy || true"
@@ -58,7 +58,8 @@ pipeline {
                             aws deploy create-deployment \
                                 --application-name your-application-name \
                                 --deployment-group-name your-deployment-group-name \
-                                --s3-location bucket=your-sit223task62minesweeper,key=mineSweeper.zip,bundleType=zip
+                                --s3-location bucket=your-sit223task62minesweeper,key=mineSweeper.zip,bundleType=zip \
+                                --region ap-southeast-2
                         '''
                     }
 
