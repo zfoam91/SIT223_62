@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        DISPLAY = ':99'
     }
 
     stages {
@@ -37,7 +36,13 @@ pipeline {
                         fi
                     '''
                     
-                    // Run xhost command to allow local connections
+                    // Run socat to proxy X11 connection
+                    sh """
+                        DISPLAY_NUMBER=\$(echo \$DISPLAY | cut -d. -f1 | cut -d: -f2)
+                        socat UNIX-LISTEN:/tmp/.X11-unix/X\${DISPLAY_NUMBER},fork TCP4:localhost:60\${DISPLAY_NUMBER} &
+                    """
+
+                    // Allow local connections
                     sh 'xhost +local:'
 
                     // Build the Docker image
@@ -48,7 +53,8 @@ pipeline {
                         docker run -d --name minesweeper-display \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
-                            --network host \
+                            -v ${HOME}/.Xauthority:/home/xterm/.Xauthority \
+                            --hostname \$(hostname) \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                     
