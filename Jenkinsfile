@@ -28,6 +28,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    env.DISPLAY = ':0'  // Adjust if necessary
+
                     // Allow X server connections
                     sh 'xhost +local:'
 
