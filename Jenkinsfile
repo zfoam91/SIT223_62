@@ -49,7 +49,7 @@ pipeline {
                         // Define your application and deployment group
                         def appName = 'Minesweeper'
                         def deploymentGroup = 'MinesweeperDeploymentGroup'
-                        
+                        sh 'ls -l'
                         // Create a new revision
                         sh '''
                         zip -r minesweeper.zip
