@@ -80,11 +80,12 @@ pipeline {
 
             }
         }
+        /*
         stage('Monitor and Alert'){
             steps{
 
             }
-        }
+        }*/
         
     }
     
