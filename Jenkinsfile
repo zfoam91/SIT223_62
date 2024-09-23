@@ -31,7 +31,7 @@ pipeline {
                     env.DISPLAY = ':0'  // Adjust if necessary
 
                     // Allow X server connections
-                    sh 'xhost +local:'
+                    sh 'xhost +'
 
                     // Run the Docker container with X11 forwarding
                     sh """
