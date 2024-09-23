@@ -53,15 +53,6 @@ pipeline {
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
                     
-                    // Diagnostic steps
-                    sh """
-                        echo "DISPLAY environment variable: $DISPLAY"
-                        docker exec minesweeper-display env | grep DISPLAY
-                        docker exec minesweeper-display ls -l /tmp/.X11-unix
-                        docker exec minesweeper-display ls -l /app
-                        docker exec minesweeper-display ls -l /app/assets
-                    """
-                    
                     // Wait for user input to stop the game
                     input message: 'Minesweeper should be running. Check the display. Press "Proceed" to stop the game and continue the pipeline.'
                     
