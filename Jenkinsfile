@@ -28,13 +28,23 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'xhost +'
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     sh "docker stop minesweeper-staging || true"
                     sh "docker rm minesweeper-staging || true"
-                    sh "docker run -d --name minesweeper-staging -e DISPLAY=\${DISPLAY} -v /tmp/.X11-unix:/tmp/.X11-unix ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    // Allow access to the X server for Docker
+                    sh 'xhost +local:docker'
+
+                    // Build the Docker image
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+
+                    // Run the Docker container with X11 forwarding
+                    sh """
+                        docker run -ti --rm \
+                            -e DISPLAY=${DISPLAY} \
+                            -v /tmp/.X11-unix:/tmp/.X11-unix \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
                     input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
-                    sh 'xhost -'
+                    sh 'xhost -local:docker'
                 } 
             }
         }
