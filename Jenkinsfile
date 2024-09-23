@@ -51,9 +51,9 @@ pipeline {
                         def deploymentGroup = 'MinesweeperDeploymentGroup'
                         
                         // Create a new revision
-                        sh '''
-                        zip -r mineSweeper.zip minesweeper.zip index.html
-                        '''
+                        sh 'zip -r mineSweeper.zip minesweeper.zip index.html appspec.yml scripts/'
+                        sh 'aws s3 cp mineSweeper.zip s3://sit223task62minesweeper/mineSweeper.zip --region ap-southeast-2'
+            
                         sh '''
                             aws deploy create-deployment \
                                 --application-name Minesweeper \
@@ -64,6 +64,7 @@ pipeline {
                     }
 
                 }
+                
             }
         }
         /*
