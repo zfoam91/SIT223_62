@@ -73,10 +73,10 @@ pipeline {
         stage('Monitor and Alert'){
             steps{
                 script {
-                    // Calculate build duration or other metrics as needed
+                    // Calculate build duration
                     def buildDuration = currentBuild.duration / 1000 // in seconds
                     
-                    // Send metric to Datadog
+                    // Send build duration metric to Datadog
                     sh """
                         curl -X POST "https://api.datadoghq.com/api/v1/series" \
                         -H "Content-Type: application/json" \
@@ -91,26 +91,35 @@ pipeline {
                         }'
                     """
 
-                    // Query Datadog for metrics and save as artifact
+                    // Send a Datadog event for build completion
+                    def buildStatus = currentBuild.currentResult
                     sh """
-                        curl -X GET "https://api.datadoghq.com/api/v1/query?from=${System.currentTimeMillis()/1000 - 3600}&to=${System.currentTimeMillis()/1000}&query=avg:jenkins.build.duration{job:${JOB_NAME}}" \
+                        curl -X POST "https://api.datadoghq.com/api/v1/events" \
+                        -H "Content-Type: application/json" \
                         -H "DD-API-KEY: ${DATADOG_API_KEY}" \
-                        -H "DD-APPLICATION-KEY: ${DATADOG_APP_KEY}" \
-                        -o datadog_metrics.json
+                        -d '{
+                            "title": "Jenkins Build ${JOB_NAME} #${BUILD_NUMBER}",
+                            "text": "Build completed with status: ${buildStatus}\\nDuration: ${buildDuration} seconds",
+                            "priority": "normal",
+                            "tags": ["jenkins", "build:${BUILD_NUMBER}", "job:${JOB_NAME}", "status:${buildStatus}"],
+                            "alert_type": "${buildStatus == 'SUCCESS' ? 'success' : 'error'}"
+                        }'
                     """
-                    archiveArtifacts artifacts: 'datadog_metrics.json', fingerprint: true
 
-                    // Check for active alerts
-                    def alertsResponse = sh(script: """
-                        curl -X GET "https://api.datadoghq.com/api/v1/monitor/search?query=status:Alert" \
-                        -H "DD-API-KEY: ${DATADOG_API_KEY}" \
-                        -H "DD-APPLICATION-KEY: ${DATADOG_APP_KEY}"
-                    """, returnStdout: true)
+                    // Create a simple metrics report
+                    def report = """
+                    Build Metrics Report
+                    ====================
+                    Job: ${JOB_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Status: ${buildStatus}
+                    Duration: ${buildDuration} seconds
 
-                    def alerts = readJSON text: alertsResponse
-                    if (alerts.monitors.size() > 0) {
-                        echo "Warning: There are active Datadog alerts. Please check Datadog dashboard."
-                    }
+                    This data has been sent to Datadog for monitoring and alerting.
+                    """
+
+                    writeFile file: 'build_metrics_report.txt', text: report
+                    archiveArtifacts artifacts: 'build_metrics_report.txt', fingerprint: true
                 }
             }
         } 
