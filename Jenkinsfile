@@ -29,7 +29,6 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                steps {
                 script {
                     // Create a zip file containing the executable and assets
                     sh 'zip -r minesweeper.zip minesweeper assets'
@@ -41,7 +40,6 @@ pipeline {
                     echo "Minesweeper download page available at http://localhost:8081"
 
                 }
-            }
             }
         }
         
