@@ -28,37 +28,53 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    // Clean up any existing container
                     sh '''
                         if [ $(docker ps -q -f name=minesweeper-display) ]; then
                             docker stop minesweeper-display
                             docker rm minesweeper-display
                         fi
                     '''
+                    
                     // Start Xvfb for graphical applications
-                    sh 'Xvfb :99 -screen 0 1024x768x24 &'
+                    sh 'Xvfb :99 -ac -screen 0 1024x768x24 &'
                     env.DISPLAY = ':99'
-
+                    
                     // Build the Docker image
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-
+                    
                     // Run the Docker container with X11 forwarding
                     sh """
+                        xhost +local:
                         docker run -d --name minesweeper-display \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
+                            --network host \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
-
+                    
+                    // Diagnostic steps
+                    sh """
+                        echo "DISPLAY environment variable: $DISPLAY"
+                        docker exec minesweeper-display env | grep DISPLAY
+                        docker exec minesweeper-display ls -l /tmp/.X11-unix
+                        docker exec minesweeper-display ls -l /app
+                        docker exec minesweeper-display ls -l /app/assets
+                    """
+                    
                     // Wait for user input to stop the game
-                    input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
-
+                    input message: 'Minesweeper should be running. Check the display. Press "Proceed" to stop the game and continue the pipeline.'
+                    
+                    // Capture and display logs
+                    sh 'docker logs minesweeper-display'
+                    
                     // Stop and remove the container
                     sh """
                         docker stop minesweeper-display
                         docker rm minesweeper-display
-                        xhost -local:root
+                        xhost -local:
                     """
-                        
+                    
                     echo "Minesweeper display test completed"
                 }
             }
