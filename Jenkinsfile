@@ -29,9 +29,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Build Docker image with VNC server, noVNC, and Minesweeper
-                    sh """
-                    docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} -f- . <<EOF
+                    // Create the Dockerfile content
+                    def dockerfileContent = """
                     FROM ubuntu:20.04
                     RUN apt-get update && apt-get install -y x11vnc xvfb libsfml-dev novnc
                     COPY minesweeper /app/minesweeper
@@ -39,8 +38,13 @@ pipeline {
                     COPY novnc-index.html /novnc-index.html
                     ENV DISPLAY=:0
                     CMD Xvfb :0 -screen 0 1024x768x16 & x11vnc -display :0 -forever -passwd ${VNC_PASSWORD} & /app/minesweeper & /usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 8080
-                    EOF
                     """
+
+                    // Write the Dockerfile to a file
+                    writeFile file: 'Dockerfile', text: dockerfileContent
+
+                    // Build Docker image with VNC server, noVNC, and Minesweeper
+                    sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
                     
                     // Run the Docker container
                     sh "docker run -d --name minesweeper-test -p 8081:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
