@@ -37,8 +37,7 @@ pipeline {
 
                     // Run the Docker container with X11 forwarding
                     sh """
-                        xhost +local:root
-                        docker run -d --name minesweeper-display \
+                        docker run -d --privileged --name minesweeper-display \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
