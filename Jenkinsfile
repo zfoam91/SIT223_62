@@ -56,8 +56,8 @@ pipeline {
                         '''
                         sh '''
                             aws deploy create-deployment \
-                                --application-name your-application-name \
-                                --deployment-group-name your-deployment-group-name \
+                                --application-name ${appName} \
+                                --deployment-group-name ${deploymentGroup} \
                                 --s3-location bucket=your-sit223task62minesweeper,key=mineSweeper.zip,bundleType=zip \
                                 --region ap-southeast-2
                         '''
