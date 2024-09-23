@@ -29,11 +29,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    // Allow access to the X server for Docker
+                    sh 'xhost +local:root'
+
                     // Build the Docker image
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    
-                    // Allow Docker containers to connect to X server
-                    sh 'xhost +local:docker'
 
                     // Run the Docker container with X11 forwarding
                     sh """
@@ -42,10 +42,10 @@ pipeline {
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
-                    
+
                     // Wait for user input to stop the game
                     input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
-                    
+
                     // Stop and remove the container
                     sh """
                         docker stop minesweeper-display
@@ -53,9 +53,7 @@ pipeline {
                     """
                     
                     // Revoke access to the X server
-                    sh 'xhost -local:docker'
-
-                    echo "Minesweeper display test completed"
+                    sh 'xhost -local:root'
                 }
             }
         }
