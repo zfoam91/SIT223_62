@@ -30,7 +30,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Create a zip file containing the executable and assets
                     sh 'zip -r minesweeper.zip minesweeper assets'
                     sh 'ls -l'
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
@@ -46,12 +45,18 @@ pipeline {
         stage('Release'){
             steps{
                 script {
-                    // Stop any existing Docker container
-                    sh 'docker stop minesweeper-prod || true'
-                    sh 'docker rm minesweeper-prod || true'
-                    
-                    // Run the Docker container for Minesweeper
-                    sh "docker run -d --name minesweeper-prod -p 8082:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                        // Define your application and deployment group
+                        def appName = 'Minesweeper'
+                        def deploymentGroup = 'MinesweeperDeploymentGroup'
+                        
+                        // Create a new revision
+                        sh '''
+                        zip -r mineSweeper.zip /path/to/your/build/
+                        aws deploy create-deployment --application-name ${appName} --deployment-group-name ${deploymentGroup} --s3-location bucket=your-s3-bucket-name,key=mineSweeper.zip,bundleType=zip
+                        '''
+                    }
+
                 }
             }
         }
