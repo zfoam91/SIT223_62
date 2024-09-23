@@ -60,24 +60,13 @@ pipeline {
         stage('Release'){
             steps{
                 script {
-                    // Save the Docker image as a tar file
-                    sh "docker save ${DOCKER_IMAGE}:${DOCKER_TAG} > minesweeper-release.tar"
+                    // Stop any existing Docker container
+                    sh 'docker stop minesweeper-prod || true'
+                    sh 'docker rm minesweeper-prod || true'
                     
-                    // Copy the Docker image to the deployment server
-                    sh "scp -i ${DEPLOY_SERVER_KEY} minesweeper-release.tar ${DEPLOY_SERVER}:~/"
-                    
-                    // SSH into the deployment server and deploy the new image
-                    sh """
-                    ssh -i ${DEPLOY_SERVER_KEY} ${DEPLOY_SERVER} << EOF
-                        docker load < minesweeper-release.tar
-                        docker stop minesweeper-prod || true
-                        docker rm minesweeper-prod || true
-                        docker run -d --name minesweeper-prod -p 80:80 -p 8081:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        rm minesweeper-release.tar
-                    EOF
-                    """
+                    // Run the Docker container for Minesweeper
+                    sh "docker run -d --name minesweeper-prod -p 8082:8080 ${DOCKER_IMAGE}:${DOCKER_TAG}"
                 }
-
             }
         }
         /*
