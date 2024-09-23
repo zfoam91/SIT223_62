@@ -61,10 +61,6 @@ pipeline {
                                 --s3-location bucket=sit223task62minesweeper,key=mineSweeper.zip,bundleType=zip \
                                 --region ap-southeast-2
                         '''
-
-                        sh '''
-                            ssh -o StrictHostKeyChecking=no ec2-user@172.31.15.199 "chmod +x /var/www/html/scripts/start_server.sh"
-                        '''
                     }
 
                 }
