@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
+        OCTOPUS_API_KEY = 'API-MHHOMU8FEHDSMX86CSADEFPJXP3XIN' 
     }
 
     stages {
@@ -26,32 +27,58 @@ pipeline {
         }
         
         stage('Deploy') {
-            steps {
-                script {
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-                    sh "docker stop minesweeper-staging || true"
-                    sh "docker rm minesweeper-staging || true"
-                    sh "docker run -d --name minesweeper-staging ${DOCKER_IMAGE}:${DOCKER_TAG}"
-                } 
-            }
-        }
-        
-        stage('Release'){
-            steps{
-                sh "docker stop firefox-vnc || true"
-                    sh "docker rm firefox-vnc || true"
+            script {
+                // Build the Docker image
+                docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+            
+                // Run the Docker container with X11 forwarding
+                sh """
+                    xhost +local:root
+                    docker run -d --name minesweeper-display \
+                        -e DISPLAY=${DISPLAY} \
+                        -v /tmp/.X11-unix:/tmp/.X11-unix \
+                        ${DOCKER_IMAGE}:${DOCKER_TAG}
+                """
+                
+                // Wait for user input to stop the game
+                input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
+                
+                // Stop and remove the container
+                sh """
+                    docker stop minesweeper-display
+                    docker rm minesweeper-display
+                    xhost -local:root
+                """
                     
-                    // Pull and run the creack/firefox-vnc image
-                    sh '''
-                    docker pull creack/firefox-vnc
-                    docker run -d -p 5900:5900 --name firefox-vnc -e HOME=/ creack/firefox-vnc x11vnc -forever -usepw -create
-                    '''
+                echo "Minesweeper display test completed"
             }
         }
         /*
+        stage('Release'){
+            input message: 'Deploy to production?'
+            script {
+                // Push the Docker image to a registry if necessary
+                // docker.withRegistry('https://your-registry-url', 'credentials-id') {
+                //     docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                // }
+
+                // Use Octopus CLI to create a release and deploy to production
+                sh """
+                octo create-release --project ${OCTOPUS_PROJECT} \
+                    --server ${OCTOPUS_SERVER} \
+                    --apiKey ${OCTOPUS_API_KEY} \
+                    --version ${DOCKER_TAG} \
+                    --deployto ${OCTOPUS_ENVIRONMENT} \
+                    --progress
+                """
+            }    
+        }
+        
         stage('Monitor and Alert'){
             steps{
-
+                // Set up basic health check
+                sh "while true; do curl -f http://localhost:8080 || echo 'Minesweeper is down!' | mail -s 'Minesweeper Alert' your-email@example.com; sleep 300; done &"
+                
             }
         }
         */
