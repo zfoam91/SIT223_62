@@ -52,8 +52,8 @@ pipeline {
                         sh 'ls -l'
                         // Create a new revision
                         sh '''
-                        zip -r minesweeper.zip
-                        aws deploy create-deployment --application-name ${appName} --deployment-group-name ${deploymentGroup} --s3-location bucket=your-s3-bucket-name,key=mineSweeper.zip,bundleType=zip
+                        zip -r mineSweeper.zip minesweeper.zip index.html
+                        aws deploy create-deployment --application-name ${appName} --deployment-group-name ${deploymentGroup} --s3-location bucket=your-sit223task62minesweeper,key=minesweeper.zip,bundleType=zip
                         '''
                     }
 
