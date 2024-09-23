@@ -36,8 +36,9 @@ pipeline {
                     // Run the Docker container with X11 forwarding
                     sh """
                         docker run -it --rm \
+                        --net=host \
                         --privileged \
-                        -e DISPLAY \
+                        -e DISPLAY=${DISPLAY} \
                         -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
                         ${DOCKER_IMAGE}:${DOCKER_TAG} \
                         xclock
