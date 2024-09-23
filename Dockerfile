@@ -1,17 +1,12 @@
 # Use a lightweight base image
 FROM ubuntu:20.04
 
-# Set non-interactive installation
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    libsfml-dev \
-    x11-apps \
+# Install SFML dependencies
+RUN apt-get update && apt-get install -y \
     libsfml-graphics2.5 \
     libsfml-window2.5 \
     libsfml-system2.5 \
     && rm -rf /var/lib/apt/lists/*
-
 
 # Set the working directory in the container
 WORKDIR /app
@@ -20,6 +15,13 @@ WORKDIR /app
 COPY tiles.png timer.png boom.png game.png ./
 COPY ./minesweeper ./
 
+# Make the binary executable
+RUN chmod +x /app/minesweeper
+
+# Expose the port the app runs on (if applicable)
+# EXPOSE 80
+
+# Set the DISPLAY environment variable
 ENV DISPLAY=:0
 
 # Command to run the application
