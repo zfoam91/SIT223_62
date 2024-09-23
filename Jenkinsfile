@@ -49,11 +49,16 @@ pipeline {
                         // Define your application and deployment group
                         def appName = 'Minesweeper'
                         def deploymentGroup = 'MinesweeperDeploymentGroup'
-                        sh 'ls -l'
+                        
                         // Create a new revision
                         sh '''
                         zip -r mineSweeper.zip minesweeper.zip index.html
-                        aws deploy create-deployment --application-name ${appName} --deployment-group-name ${deploymentGroup} --s3-location bucket=your-sit223task62minesweeper,key=minesweeper.zip,bundleType=zip
+                        '''
+                        sh '''
+                            aws deploy create-deployment \
+                                --application-name your-application-name \
+                                --deployment-group-name your-deployment-group-name \
+                                --s3-location bucket=your-sit223task62minesweeper,key=mineSweeper.zip,bundleType=zip
                         '''
                     }
 
