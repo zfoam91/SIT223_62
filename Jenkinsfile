@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
+        DISPLAY = ':0'
     }
 
     stages {
@@ -31,9 +32,11 @@ pipeline {
                     // Build the Docker image
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     
+                    // Allow Docker containers to connect to X server
+                    sh 'xhost +local:docker'
+
                     // Run the Docker container with X11 forwarding
                     sh """
-                        xhost +local:root
                         docker run -d --name minesweeper-display \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
@@ -47,9 +50,11 @@ pipeline {
                     sh """
                         docker stop minesweeper-display
                         docker rm minesweeper-display
-                        xhost -local:root
                     """
                     
+                    // Revoke access to the X server
+                    sh 'xhost -local:docker'
+
                     echo "Minesweeper display test completed"
                 }
             }
