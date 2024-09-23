@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     libsfml-graphics2.5 \
     libsfml-window2.5 \
     libsfml-system2.5 \
+    x11-apps \
+    libsfml-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
