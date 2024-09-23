@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        DISPLAY = ':0'
+        DISPLAY = ':99'
     }
 
     stages {
