@@ -36,21 +36,17 @@ pipeline {
                         fi
                     '''
                     
-                    // Start Xvfb for graphical applications
-                    sh 'Xvfb :99 -ac -screen 0 1024x768x24 &'
-                    env.DISPLAY = ':99'
-                    
-                    // Build the Docker image
-                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    // Allow local connections to X server
+                    sh 'xhost +local:'
                     
                     // Run the Docker container with X11 forwarding
                     sh """
-                        xhost +local:
-                        docker run -d --name minesweeper-display \
+                        docker run -it --rm \
                             -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
-                            --network host \
-                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                            --name minesweeper-display \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG} \
+                            ./minesweeper
                     """
                     
                     // Wait for user input to stop the game
@@ -62,7 +58,6 @@ pipeline {
                     // Stop and remove the container
                     sh """
                         docker stop minesweeper-display
-                        docker rm minesweeper-display
                         xhost -local:
                     """
                     
