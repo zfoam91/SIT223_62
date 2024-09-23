@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
-        OCTOPUS_API_KEY = 'API-MHHOMU8FEHDSMX86CSADEFPJXP3XIN' 
     }
 
     stages {
@@ -27,30 +26,56 @@ pipeline {
         }
         
         stage('Deploy') {
-            script {
-                // Build the Docker image
-                docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-            
-                // Run the Docker container with X11 forwarding
-                sh """
-                    xhost +local:root
-                    docker run -d --name minesweeper-display \
-                        -e DISPLAY=${DISPLAY} \
-                        -v /tmp/.X11-unix:/tmp/.X11-unix \
-                        ${DOCKER_IMAGE}:${DOCKER_TAG}
-                """
+            steps{
+                script {
+                    // Build the Docker image
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    script {
+                    // Build the Docker image
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                 
-                // Wait for user input to stop the game
-                input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
-                
-                // Stop and remove the container
-                sh """
-                    docker stop minesweeper-display
-                    docker rm minesweeper-display
-                    xhost -local:root
-                """
+                    // Run the Docker container with X11 forwarding
+                    sh """
+                        xhost +local:root
+                        docker run -d --name minesweeper-display \
+                            -e DISPLAY=${DISPLAY} \
+                            -v /tmp/.X11-unix:/tmp/.X11-unix \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
                     
-                echo "Minesweeper display test completed"
+                    // Wait for user input to stop the game
+                    input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
+                    
+                    // Stop and remove the container
+                    sh """
+                        docker stop minesweeper-display
+                        docker rm minesweeper-display
+                        xhost -local:root
+                    """
+                        
+                    echo "Minesweeper display test completed"
+                }
+                    // Run the Docker container with X11 forwarding
+                    sh """
+                        xhost +local:root
+                        docker run -d --name minesweeper-display \
+                            -e DISPLAY=${DISPLAY} \
+                            -v /tmp/.X11-unix:/tmp/.X11-unix \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """
+                    
+                    // Wait for user input to stop the game
+                    input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
+                    
+                    // Stop and remove the container
+                    sh """
+                        docker stop minesweeper-display
+                        docker rm minesweeper-display
+                        xhost -local:root
+                    """
+                        
+                    echo "Minesweeper display test completed"
+                }
             }
         }
         /*
