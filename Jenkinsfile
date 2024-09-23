@@ -28,19 +28,29 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    //docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                    // Build the Docker image
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
                     
-                    sh '''
-                        xhost +  # Allow connections to the X server
-                        docker run -it --rm \
-                            -e DISPLAY=$DISPLAY \
+                    // Run the Docker container with X11 forwarding
+                    sh """
+                        xhost +local:root
+                        docker run -d --name minesweeper-display \
+                            -e DISPLAY=${DISPLAY} \
                             -v /tmp/.X11-unix:/tmp/.X11-unix \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        xhost -  # Revoke access
-                        ''' 
-
-                        input message: 'Minesweeper should be running. Check the display. Press "Proceed" to stop the game and continue the pipeline.'
-                        
+                    """
+                    
+                    // Wait for user input to stop the game
+                    input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
+                    
+                    // Stop and remove the container
+                    sh """
+                        docker stop minesweeper-display
+                        docker rm minesweeper-display
+                        xhost -local:root
+                    """
+                    
+                    echo "Minesweeper display test completed"
                 }
             }
         }

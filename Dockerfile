@@ -4,26 +4,23 @@ FROM ubuntu:20.04
 # Set non-interactive installation
 ENV DEBIAN_FRONTEND noninteractive
 
-# Install SFML dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    libsfml-dev \
+    x11-apps \
     libsfml-graphics2.5 \
     libsfml-window2.5 \
     libsfml-system2.5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a user for running the app
-RUN useradd -ms /bin/bash xterm
-USER xterm
 
 # Set the working directory in the container
-WORKDIR /home/xterm
+WORKDIR /app
 
 # Copy the compiled Minesweeper binary and assets into the container
 COPY tiles.png timer.png boom.png game.png ./
 COPY ./minesweeper ./
 
-# Make the binary executable
-RUN chmod +x /home/xterm/minesweeper
+ENV DISPLAY=:0
 
 # Command to run the application
 CMD ["./minesweeper"]
