@@ -28,40 +28,26 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Clean up any existing container
-                    sh '''
-                        if [ $(docker ps -q -f name=minesweeper-display) ]; then
-                            docker stop minesweeper-display
-                            docker rm minesweeper-display
-                        fi
-                    '''
-                    
-                    // Prepare target environment
-                    sh '''
-                        CONTAINER_DISPLAY="0"
-                        CONTAINER_HOSTNAME="xterm"
+                    // Allow X server connections
+                    sh 'xhost +local:'
 
-                        mkdir -p display/socket
-                        touch display/Xauthority
-
-                        DISPLAY_NUMBER=$(echo $DISPLAY | cut -d. -f1 | cut -d: -f2)
-                        AUTH_COOKIE=$(xauth list | grep "^$(hostname)/unix:${DISPLAY_NUMBER} " | awk '{print $3}')
-
-                        xauth -f display/Xauthority add ${CONTAINER_HOSTNAME}/unix:${CONTAINER_DISPLAY} MIT-MAGIC-COOKIE-1 ${AUTH_COOKIE}
-
-                        socat UNIX-LISTEN:display/socket/X${CONTAINER_DISPLAY},fork TCP4:localhost:60${DISPLAY_NUMBER} &
-                    '''
-
-                    // Launch the container
+                    // Run the Docker container with X11 forwarding
                     sh """
                         docker run -it --rm \
-                            -e DISPLAY=:${CONTAINER_DISPLAY} \
-                            -e XAUTHORITY=/tmp/.Xauthority \
-                            -v ${WORKSPACE}/display/socket:/tmp/.X11-unix \
-                            -v ${WORKSPACE}/display/Xauthority:/tmp/.Xauthority \
-                            --hostname ${CONTAINER_HOSTNAME} \
-                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        --privileged \
+                        -e DISPLAY \
+                        -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+                        ${DOCKER_IMAGE}:${DOCKER_TAG} \
+                        xclock
                     """
+                    
+                    // Capture and display logs (if needed)
+                    sh 'docker logs minesweeper-display'
+                    // Prompt to continue
+                    input message: 'Testing. Continue?'
+
+                    // Clean up and remove any Docker containers (if needed)
+                    sh 'docker ps -a -q --filter "name=minesweeper-display" | xargs -r docker rm -f'
                     
                     echo "Minesweeper display test completed"
                 }
