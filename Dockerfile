@@ -1,24 +1,16 @@
 # Use a lightweight base image
 FROM ubuntu:20.04
 
-# Install SFML dependencies
+# Set non-interactive installation
+ENV DEBIAN_FRONTEND noninteractive
+
 RUN apt-get update && apt-get install -y \
-    x11-apps \
     libsfml-dev \
+    x11-apps \
+    xfce4 \
+    xfce4-terminal \
+    tightvncserver \
     && rm -rf /var/lib/apt/lists/*
-
-
-# Replace 1000 with your user / group id
-RUN export uid=1000 gid=1000 && \
-    mkdir -p /home/developer && \
-    echo "developer:x:${uid}:${gid}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
-    echo "developer:x:${uid}:" >> /etc/group && \
-    echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
-    chmod 0440 /etc/sudoers.d/developer && \
-    chown ${uid}:${gid} -R /home/developer
-
-USER developer
-ENV HOME /home/developer
 
 # Set the working directory in the container
 WORKDIR /app
@@ -27,14 +19,14 @@ WORKDIR /app
 COPY tiles.png timer.png boom.png game.png ./
 COPY ./minesweeper ./
 
-# Make the binary executable
-RUN chmod +x /app/minesweeper
+# Create a user to run the VNC server
+RUN useradd -m vncuser && echo "vncuser:vncpassword" | chpasswd
 
-# Expose the port the app runs on (if applicable)
-# EXPOSE 80
+USER vncuser
+ENV HOME /home/vncuser
 
-# Set the DISPLAY environment variable
-ENV DISPLAY=:0
+# Expose the VNC port
+EXPOSE 5901
 
-# Command to run the application
-CMD ["./minesweeper"]
+# Start the VNC server and run the Minesweeper application
+CMD ["sh", "-c", "vncserver :1 -geometry 1024x768 -depth 24 && DISPLAY=:1 ./minesweeper"]

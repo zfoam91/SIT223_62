@@ -31,16 +31,14 @@ pipeline {
                     sh "docker stop minesweeper-staging || true"
                     sh "docker rm minesweeper-staging || true"
                     
-                    // Build the Docker image
                     docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
-
-                    // Run the Docker container with X11 forwarding
+                    
+                    // Run the Docker container with VNC
                     sh """
-                        docker run -ti --rm \
-                            -e DISPLAY=${DISPLAY} \
-                            -v /tmp/.X11-unix:/tmp/.X11-unix \
+                        docker run -d -p 5901:5901 \
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
                     """
+                    
                     input message: 'Minesweeper is now running. Press "Proceed" to stop the game and continue the pipeline.'
                 
                 } 
