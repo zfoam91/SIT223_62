@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     environment {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
@@ -30,8 +30,7 @@ pipeline {
                     echo 'Running SonarQube analysis...'
                     def scannerHome = tool 'SonarQube'
 
-                    withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube') {
-                        
+                    withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube') {    
                         sh "${scannerHome}/bin/sonar-scanner"
                     }
                 } 
@@ -117,8 +116,6 @@ pipeline {
                     Build Number: ${BUILD_NUMBER}
                     Status: ${buildStatus}
                     Duration: ${buildDuration} seconds
-
-                    This data has been sent to Datadog for monitoring and alerting.
                     """
 
                     writeFile file: 'build_metrics_report.txt', text: report
