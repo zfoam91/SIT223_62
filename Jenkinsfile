@@ -27,6 +27,10 @@ pipeline {
         stage('Code Quality Analysis') {
             steps {
                 script {
+                    echo 'Running Cppcheck analysis...'
+                    sh 'cppcheck --enable=all --xml . 2> cppcheck_result.xml'
+                    archiveArtifacts artifacts: 'cppcheck_result.xml', fingerprint: true
+
                     echo 'Running SonarQube analysis...'
                     def scannerHome = tool 'SonarQube'
 
