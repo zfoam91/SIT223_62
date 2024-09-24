@@ -8,7 +8,7 @@ pipeline {
     }
 
     tools {
-        sonarQube 'SonarQube' // Replace with the name defined in Global Tool Configuration
+        sonarScanner 'SonarQube' // Replace with the name defined in Global Tool Configuration
     }
 
     stages {
