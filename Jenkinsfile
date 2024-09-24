@@ -7,6 +7,10 @@ pipeline {
         DATADOG_API_KEY = 'cc87e1d8af609a39ef59fe2f64c11591'
     }
 
+    tools {
+        sonarQube 'SonarQube' // Replace with the name defined in Global Tool Configuration
+    }
+
     stages {
         stage('Build') {
             steps {
@@ -16,15 +20,28 @@ pipeline {
         stage('Test') {
             steps {
                 sh 'g++ -std=c++11 -o test_minesweeper test_minesweeper.cpp lib.cpp -lgtest -lgtest_main -pthread'
-                sh './test_minesweeper --gtest_output="xml:test_results.xml"'
-                archiveArtifacts artifacts: 'test_results.xml', fingerprint: true
+                //sh './test_minesweeper --gtest_output="xml:test_results.xml"'
+                //archiveArtifacts artifacts: 'test_results.xml', fingerprint: true
+                script {
+                    def testOutput = sh(script: './test_minesweeper', returnStdout: true).trim()
+                    echo testOutput  // Print output to the console
+                    writeFile file: 'test_output.txt', text: testOutput  // Save output to a file
+                    archiveArtifacts artifacts: 'test_output.txt', fingerprint: true  // Archive the output file
+                }
             }
         }
         stage('Code Quality Analysis') {
             steps {
                 script {
-                    sh 'cppcheck --enable=all --xml . 2> cppcheck_result.xml'
-                    archiveArtifacts artifacts: 'cppcheck_result.xml', fingerprint: true
+                    echo 'Building the project...'
+                    
+                    // Step 2: Run SonarQube Scanner
+                    def scannerHome = '/opt/sonarqube' // Update to the path of SonarQube
+                    withSonarQubeEnv('SonarQube') { // Replace with the name you used in system config
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                    archiveArtifacts artifacts: '**/target/sonar/**', allowEmptyArchive: true
+                    echo 'SonarQube analysis results archived.'
                 }  
             }
         }
@@ -48,7 +65,7 @@ pipeline {
             steps{
                 script {
                     withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
-                        // Define your application and deployment group
+                        // Define application and deployment group
                         def appName = 'Minesweeper'
                         def deploymentGroup = 'MinesweeperDeploymentGroup'
                         
@@ -126,8 +143,8 @@ pipeline {
     }
     
     post {
-        always {
-            junit allowEmptyResults: true, testResults: 'test_results.xml'}
+        //always {
+        //    junit allowEmptyResults: true, testResults: 'test_results.xml'}
         success {
             archiveArtifacts artifacts: 'minesweeper', fingerprint: true
         }
