@@ -36,7 +36,6 @@ pipeline {
                         // Run the sonar-scanner
                         sh "${scannerHome}/bin/sonar-scanner"
                     }
-                    archiveArtifacts artifacts: '**/target/sonar/*', fingerprint: true
                 } 
             }
         }
