@@ -34,7 +34,7 @@ pipeline {
 
                     withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube') {
                         // Run the sonar-scanner
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=your_project_key -Dsonar.sources=./src"
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=Minesweeper -Dsonar.sources=./src"
                     }
                     archiveArtifacts artifacts: 'target/sonar/report-task.txt', fingerprint: true
                 } 
