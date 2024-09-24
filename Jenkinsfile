@@ -5,7 +5,6 @@ pipeline {
         DOCKER_IMAGE = 'minesweeper'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         DATADOG_API_KEY = 'cc87e1d8af609a39ef59fe2f64c11591'
-        SONAR_SCANNER_HOME = '/opt/sonarqube'
     }
 
     stages {
@@ -31,12 +30,13 @@ pipeline {
             steps {
                 script {
                     echo 'Running SonarQube analysis...'
-                    
-                    // Run SonarQube Scanner
-                    sh "${SONAR_SCANNER_HOME}/bin/sonar-scanner" // Ensure this path is correct
-                    // Archive SonarQube report (adjust the path as necessary)
-                    archiveArtifacts artifacts: '**/target/sonar/**', allowEmptyArchive: true
-                    echo 'SonarQube analysis results archived.'
+                    def scannerHome = tool 'SonarQube'
+
+                    withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube Scanner 6.2.0.4584') {
+                        // Run the sonar-scanner
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=your_project_key -Dsonar.sources=./src"
+                    }
+                    archiveArtifacts artifacts: 'target/sonar/report-task.txt', fingerprint: true
                 } 
             }
         }
