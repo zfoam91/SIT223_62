@@ -32,7 +32,7 @@ pipeline {
                     echo 'Running SonarQube analysis...'
                     def scannerHome = tool 'SonarQube'
 
-                    withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube Scanner 6.2.0.4584') {
+                    withSonarQubeEnv(credentialsId: 'SonarQube', installationName: 'SonarQube') {
                         // Run the sonar-scanner
                         sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=your_project_key -Dsonar.sources=./src"
                     }
